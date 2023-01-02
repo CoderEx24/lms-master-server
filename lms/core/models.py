@@ -1,6 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class Customer(User):
+    None
+
+class Librarian(User):
+    None
+
 class Book(models.Model):
     title = models.CharField(max_length=250)
     authors = models.CharField(max_length=600)
@@ -10,12 +16,13 @@ class Book(models.Model):
     count = models.IntegerField(blank=False, null=False, default=0)
 
 class Wishlist(models.Model):
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(Customer)
     list_of_books = models.ManyToManyField(Book, 'favored_book')
     is_public = models.BooleanField(default=False)
 
 class Borrow(models.Model):
-    borrower = models.ForeignKey(User)
+    borrower = models.ForeignKey(Customer)
+    checker = models.ForeignKey(Librarian)
     book = models.ManyToManyField(Book, related_name='borrowed_book')
     date_of_borrowing = models.DateTimeField(auto_now=True)
     date_of_retrival = models.DateTimeField()
