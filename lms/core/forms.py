@@ -2,8 +2,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import *
 
-class SignupForm(UserCreationForm):
+class CustomerSignupForm(UserCreationForm):
     class Meta:
-        model = User
+        model = Customer
         fields = ['username', 'password1', 'password2']
 
