@@ -16,13 +16,14 @@ class Book(models.Model):
     count = models.IntegerField(blank=False, null=False, default=0)
 
 class Wishlist(models.Model):
-    user = models.ForeignKey(Customer)
+    user = models.ForeignKey(Customer, on_delete=models.CASCADE)
     list_of_books = models.ManyToManyField(Book, 'favored_book')
     is_public = models.BooleanField(default=False)
 
 class Borrow(models.Model):
-    borrower = models.ForeignKey(Customer)
-    checker = models.ForeignKey(Librarian)
+    borrower = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    # TODO: use something more appropriate that CASCADE
+    checker = models.ForeignKey(Librarian, on_delete=models.CASCADE)
     book = models.ManyToManyField(Book, related_name='borrowed_book')
     date_of_borrowing = models.DateTimeField(auto_now=True)
     date_of_retrival = models.DateTimeField()
