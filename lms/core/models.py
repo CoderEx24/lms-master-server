@@ -9,6 +9,17 @@ class Librarian(models.Model):
     user = models.OneToOneField(authmodels.User, on_delete=models.CASCADE)
     salary = models.FloatField(default=1200.0)
 
+# this function is to be use by an admin to add librarians
+def create_librarian(username: str, password: str) -> Librarian:
+    user = authmodels.User(username=username)
+    user.set_password(password)
+    user.save()
+
+    librarian = Librarian(user=user)
+    librarian.save()
+    
+    return librarian
+
 class Book(models.Model):
     title = models.CharField(max_length=250)
     authors = models.CharField(max_length=600)
