@@ -10,7 +10,7 @@ __all__ = ['customer_signup']
 
 @api_view(['POST'])
 def customer_signup(req: Request) -> Response:
-    signup_form = CustomerSignupForm(req.data)
+    signup_form = SignupForm(req.data)
     if signup_form.is_valid():
         new_user = signup_form.save()
         token = Token.objects.create(user=new_user)
@@ -18,4 +18,13 @@ def customer_signup(req: Request) -> Response:
 
     return Response(f'{signup_form.error_messages}', status=status.HTTP_406_NOT_ACCEPTABLE)
 
+@api_view(['POST'])
+def customer_login(req: Request) -> Response:
+    login_form = LoginForm(req, req.data)
+    if login_form.is_valid():
+        logged_user = login_form.get_user()
+        token, _ = Token.objects.get_or_create(user=logged_user)
+        return Response(f"Token {token.key}", status=status.HTTP_200_OK)
+
+    return Response(f"{login_form.error_messages}", status=status.HTTP_406_NOT_ACCEPTABLE)
 

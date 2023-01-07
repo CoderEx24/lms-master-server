@@ -8,3 +8,8 @@ class SignupForm(UserCreationForm):
         model = get_user_model()
         fields = ['username', 'password1', 'password2']
 
+class LoginForm(AuthenticationForm):
+     class Meta:
+         model = get_user_model()
+         fields = ['username', 'password']
+
