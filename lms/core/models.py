@@ -11,6 +11,7 @@ class Book(models.Model):
     publishing_date = models.DateTimeField()
     genres = models.CharField(max_length=100)
     count = models.IntegerField(blank=False, null=False, default=0)
+    available = models.BooleanField(default=True)
 
 class Wishlist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
