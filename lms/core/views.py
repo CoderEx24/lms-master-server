@@ -7,13 +7,13 @@ from .models import *
 from .forms import *
 from .serializers import *
 
-__all__ = ['customer_signup']
-
 @api_view(['POST'])
 def customer_signup(req: Request) -> Response:
     signup_form = SignupForm(req.data)
     if signup_form.is_valid():
         new_user = signup_form.save()
+        new_customer = Customer.objects.create(user=new_user)
+        new_customer.save()
         token = Token.objects.create(user=new_user)
         return Response(f'Token {token.key}', status.HTTP_201_CREATED)
 
