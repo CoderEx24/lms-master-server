@@ -40,6 +40,22 @@ def customer_login(req: Request) -> Response:
 
     return Response(f"{login_form.error_messages}", status=status.HTTP_406_NOT_ACCEPTABLE)
 
+@api_view(['POST'])
+def librarian_login(req: Request) -> Response:
+    login_form = LoginForm(req, req.data)
+    if login_form.is_valid():
+        logged_user = login_form.get_user()
+
+        try:
+            Librarian.objects.get(user=logged_user)
+        except Librarian.DoesNotExist:
+            return Response('ummm, what are you doing here?\nthis area is offlimits', status.HTTP_403_FORBIDDEN)
+
+        token, _ = Token.objects.get_or_create(user=logged_user)
+        return Response(f"Token {token.key}", status=status.HTTP_200_OK)
+
+    return Response(f"{login_form.error_messages}", status=status.HTTP_406_NOT_ACCEPTABLE)
+
 @api_view(['GET'])
 def search_book(req: Request) -> Response:
     title = req.data.get('title') or ''
