@@ -5,6 +5,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from .models import *
 from .forms import *
+from .serializers import *
 
 __all__ = ['customer_signup']
 
@@ -27,4 +28,22 @@ def customer_login(req: Request) -> Response:
         return Response(f"Token {token.key}", status=status.HTTP_200_OK)
 
     return Response(f"{login_form.error_messages}", status=status.HTTP_406_NOT_ACCEPTABLE)
+
+@api_view(['GET'])
+def search_book(req: Request) -> Response:
+    title = req.data.get('title') or ''
+    authors = req.data.get('authors') or ''
+    publisher = req.data.get('publisher') or ''
+    genre = req.data.get('genre') or ''
+
+    queryset = Book.objects.filter(
+            title__contains=title,
+            authors__contains=authors,
+            publisher__contains=publisher,
+            genres__contains=genre,
+            )
+
+    serializer = BookSerializer(queryset, many=True)
+
+    return Response(serializer.data, status.HTTP_200_OK)
 
