@@ -29,6 +29,12 @@ def customer_login(req: Request) -> Response:
     login_form = LoginForm(req, req.data)
     if login_form.is_valid():
         logged_user = login_form.get_user()
+
+        try:
+            Customer.objects.get(user=logged_user)
+        except Customer.DoesNotExist:
+            return Response('Librarians cannot login to Customer interface', status.HTTP_403_FORBIDDEN)
+
         token, _ = Token.objects.get_or_create(user=logged_user)
         return Response(f"Token {token.key}", status=status.HTTP_200_OK)
 
