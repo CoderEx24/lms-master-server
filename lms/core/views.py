@@ -1,6 +1,11 @@
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, \
+        authentication_classes, permission_classes
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from .models import *
@@ -47,3 +52,36 @@ def search_book(req: Request) -> Response:
 
     return Response(serializer.data, status.HTTP_200_OK)
 
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def borrow_book(req: Request, book_pk: int) -> Response:
+    book = get_object_or_404(Book, pk=book_pk)
+    borrower = req.data.get('borrower') or ''
+    # TODO: validate date of retrival
+    date_of_retrival = req.data.get('date_of_retrival') or ''
+
+    if not borrower:
+        return Response("Customer Not Found", status=status.HTTP_400_BAD_REQUEST)
+
+    if not date_of_retrival:
+        return Response("Date of Retrival not Specified", status.HTTP_400_BAD_REQUEST)
+
+    borrower = get_object_or_404(Customer, user__username=borrower)
+    checker = req.user
+
+    try:
+        checker = Librarian.objects.get(user=req.user)
+    except Librarian.DoesNotExist:
+        return Response('Only Librarians can register borrowings', status.HTTP_403_FORBIDDEN)
+
+    borrow_record = Borrow(
+            borrower=borrower,
+            checker=checker,
+            date_of_retrival=date_of_retrival
+            )
+    borrow_record.save()
+    borrow_record.book.add(book)
+    borrow_record.save()
+
+    return Response(status=status.HTTP_200_OK)
