@@ -121,10 +121,30 @@ def borrow_book(req: Request, book_pk: int) -> Response:
     book.available = book.count > 0
     book.save()
 
-    return Response(status=status.HTTP_200_OK)
+    return Response(f'record {borrow_record.id}', status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def return_book(req: Request) -> Response:
-    pass
+    try:
+        Librarian.objects.get(user=req.user)
+    except Librarian.DoesNotExist:
+        return Response('Only Librarians can return books', status.HTTP_403_FORBIDDEN)
+
+    record_id = req.data.get('record_id') or ''
+
+    if not record_id:
+        return Response('Record ID missing', status.HTTP_400_BAD_REQUEST)
+
+    borrow_record = get_object_or_404(Borrow, pk=record_id)
+    book = borrow_record.book
+
+    book.count += 1
+    book.available = book.count > 0
+    book.save()
+
+    borrow_record.delete()
+    
+    return Response(status=status.HTTP_200_OK)
+
