@@ -148,3 +148,35 @@ def return_book(req: Request) -> Response:
     
     return Response(status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def punish_user(req: Request) -> Response:
+    username = req.data.get('username') or ''
+
+    if not username:
+        return Response('Username missing', status.HTTP_406_NOT_ACCEPTABLE)
+
+    customer = get_object_or_404(Customer, user__username=username)
+    customer.allowed_to_borrow = False
+    customer.save()
+
+    return Response(status=status.HTTP_200_OK)
+
+# TODO: This is bad
+#       Find another, more elegent way of doing this
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def unpunish_user(req: Request) -> Response:
+    username = req.data.get('username') or ''
+
+    if not username:
+        return Response('Username missing', status.HTTP_406_NOT_ACCEPTABLE)
+
+    customer = get_object_or_404(Customer, user__username=username)
+    customer.allowed_to_borrow = True
+    customer.save()
+
+    return Response(status=status.HTTP_200_OK)
+    
