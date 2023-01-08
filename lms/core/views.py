@@ -68,6 +68,7 @@ def search_book(req: Request) -> Response:
             authors__contains=authors,
             publisher__contains=publisher,
             genres__contains=genre,
+            available=True,
             )
 
     serializer = BookSerializer(queryset, many=True)
@@ -94,16 +95,36 @@ def borrow_book(req: Request, book_pk: int) -> Response:
 
     try:
         checker = Librarian.objects.get(user=req.user)
+        Borrow.objects.get(borrower=borrower, book=book)
+        
+        return Response('The User already borrowed this book', status.HTTP_406_NOT_ACCEPTABLE)
     except Librarian.DoesNotExist:
         return Response('Only Librarians can register borrowings', status.HTTP_403_FORBIDDEN)
+    except Borrow.DoesNotExist:
+        pass
+
+    if not borrower.allowed_to_borrow:
+        return Response('The User cannot borrow currently', status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not book.available:
+        return Response('The Book is currently unavailable', status.HTTP_406_NOT_ACCEPTABLE)
 
     borrow_record = Borrow(
             borrower=borrower,
             checker=checker,
-            date_of_retrival=date_of_retrival
+            date_of_retrival=date_of_retrival,
+            book=book
             )
     borrow_record.save()
-    borrow_record.book.add(book)
-    borrow_record.save()
+
+    book.count -= 1
+    book.available = book.count > 0
+    book.save()
 
     return Response(status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def return_book(req: Request) -> Response:
+    pass
