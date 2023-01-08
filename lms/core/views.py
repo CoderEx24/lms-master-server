@@ -180,3 +180,18 @@ def unpunish_user(req: Request) -> Response:
 
     return Response(status=status.HTTP_200_OK)
     
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def librarian_add_book(req: Request) -> Response:
+    try:
+        Librarian.objects.get(user=req.user)
+    except Librarian.DoesNotExist:
+        return Response('Only Librarians can add books', status.HTTP_403_FORBIDDEN)
+
+    serializer = BookSerializer(data=req.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(status=status.HTTP_201_CREATED)
+
+    return Response(f'{serializer.error_messages}', status.HTTP_406_NOT_ACCEPTABLE)

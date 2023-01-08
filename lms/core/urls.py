@@ -7,6 +7,7 @@ urlpatterns = [
     path('librarian/login/', views.librarian_login),
     path('librarian/punish_user/', views.punish_user),
     path('librarian/unpunish_user/', views.unpunish_user),
+    path('books/add/', views.librarian_add_book),
     path('books/search/', views.search_book),
     path('books/<int:book_pk>/borrow/', views.borrow_book),
     path('books/return/', views.return_book),
