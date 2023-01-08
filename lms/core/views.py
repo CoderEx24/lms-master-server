@@ -195,3 +195,36 @@ def librarian_add_book(req: Request) -> Response:
         return Response(status=status.HTTP_201_CREATED)
 
     return Response(f'{serializer.error_messages}', status.HTTP_406_NOT_ACCEPTABLE)
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def librarian_mark_unavailable(req: Request, book_pk: int) -> Response:
+    try:
+        Librarian.objects.get(user=req.user)
+    except Librarian.DoesNotExist:
+        return Response('Only Librarians can add books', status.HTTP_403_FORBIDDEN)
+    
+    book = get_object_or_404(Book, pk=book_pk)
+    book.available = False
+    book.save()
+
+    return Response(status=status.HTTP_200_OK)
+
+# TODO: This is bad
+#       find a better way of doing this
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def librarian_mark_available(req: Request, book_pk: int) -> Response:
+    try:
+        Librarian.objects.get(user=req.user)
+    except Librarian.DoesNotExist:
+        return Response('Only Librarians can add books', status.HTTP_403_FORBIDDEN)
+    
+    book = get_object_or_404(Book, pk=book_pk)
+    book.available = True
+    book.save()
+
+    return Response(status=status.HTTP_200_OK)
+
